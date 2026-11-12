@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agri Vaahan (ಅಗ್ರಿ ವಾಹನ) • Karnataka APMC Commodity Workbench</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232962ff'/%3E%3Cpath d='M8 21l5-5 4 3 7-8' stroke='%23ffffff' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+    <!-- Prevent theme flash before stylesheet paints -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('agrivaahan_theme') || 'light';
+                document.documentElement.setAttribute('data-theme', saved === 'dark' ? 'dark' : 'light');
+            } catch (_) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+
+    <!-- Google Fonts: Inter, Plus Jakarta Sans, JetBrains Mono & Noto Sans Kannada -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+        rel="stylesheet" />
+
+    <!-- Vendor CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Agri Vaahan Stylesheet (cache-busted) -->
+    <link rel="stylesheet" href="css/terminal.css?v=20261111_phase3b" />
+</head>
+
+<body>
+
+    <div class="content-wrapper">
+        <!-- 1. SINGLE-ROW TRADINGVIEW WORKBENCH HEADER -->
+        <header class="portal-header">
+            <div class="av-header-inner">
+                <a href="#terminalHeroSection" class="portal-brand">
+                    <div class="terminal-logo-badge" aria-hidden="true">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <div class="portal-title-box">
+                        <h1>
+                            <span data-i18n="brandTitle">Agri Vaahan</span>
+                            <span class="av-native-tag" data-i18n="brandNativeTag">ಅಗ್ರಿ ವಾಹನ</span>
+                            <span class="status-beacon" data-i18n="statusActive">MARKET ACTIVE</span>
+                            <span class="mock-mode-pill" id="dataModeBadge">CONNECTING...</span>
+                        </h1>
+                    </div>
+                </a>
+
+                <!-- Re-ordered & Re-labeled Inline Workspace Tabs -->
+                <nav class="av-workspace-nav" aria-label="Agri Vaahan Workspaces">
+                    <button type="button" class="av-tab-btn active" id="navTabTerminal" data-tab="terminal">
+                        <i class="fa-solid fa-chart-column av-tab-ico"></i>
+                        <span data-i18n="navTerminal">Chart Desk</span>
+                        <span class="av-tab-badge" data-i18n="navTerminalBadge">Live</span>
+                    </button>
+                    <button type="button" class="av-tab-btn" id="navTabMovers" data-tab="movers">
+                        <i class="fa-solid fa-fire-flame-curved av-tab-ico"></i>
+                        <span data-i18n="navMovers">Statewide Movers</span>
+                        <span class="av-tab-badge" data-i18n="navMoversBadge">Top Δ</span>
+                    </button>
+                    <button type="button" class="av-tab-btn" id="navTabAdvisory" data-tab="advisory">
+                        <i class="fa-solid fa-cloud-sun-rain av-tab-ico"></i>
+                        <span data-i18n="navAdvisory">Weather &amp; Policy</span>
+                        <span class="av-tab-badge" data-i18n="navAdvisoryBadge">Interventions</span>
+                    </button>
+                    <button type="button" class="av-tab-btn" id="navTabAnalysis" data-tab="analysis">
+                        <i class="fa-solid fa-scale-balanced av-tab-ico"></i>
+                        <span data-i18n="navAnalysis">Analysis &amp; Reports</span>
+                        <span class="av-tab-badge" data-i18n="navAnalysisBadge">TR-1 • % Δ</span>
+                    </button>
+                </nav>
+
+                <!-- Compact Header Actions (Clock & Ticker relocated to Bottom Dock) -->
+                <div class="av-header-actions">
+                    <div class="lang-toggle-group" role="group" aria-label="Language switch">
+                        <button type="button" class="lang-btn active" id="btnLangEn" data-lang="en">EN</button>
+                        <button type="button" class="lang-btn" id="btnLangKn" data-lang="kn">ಕನ್ನಡ</button>
+                    </div>
+
+                    <button type="button" class="btn-terminal theme-toggle-btn" id="btnThemeToggle"
+                        title="Switch Daylight / Dark appearance">
+                        <i id="btnThemeIcon" class="fa-solid fa-moon av-accent-primary"></i>
+                        <span id="btnThemeLabel" data-i18n="themeDarkLabel">Dark</span>
+                    </button>
+
+                    <button type="button" class="btn-terminal" id="btnSync" title="Reload current DuckDB rates">
+                        <i id="btnRefreshIcon" class="fa-solid fa-arrows-rotate av-accent-primary"></i>
+                        <span data-i18n="btnSync">Refresh</span>
+                    </button>
+
+                    <button type="button" class="btn-terminal btn-terminal-scrape" id="btnScrapeLatest"
+                        title="Compulsorily scrape current month plus dynamic previous N months from Krishi Marata Vahini (kmvahini 1.2.0)">
+                        <i id="btnScrapeIcon" class="fa-solid fa-cloud-arrow-down av-accent-primary"></i>
+                        <span id="btnScrapeLabel" data-i18n="btnScrapeLatest">Sync Latest Data</span>
+                    </button>
+
+                    <button type="button" class="btn-terminal" id="btnInspectApi"
+                        title="Inspect data pipeline, kmvahini 1.2.0 sync &amp; JSON schemas">
+                        <i class="fa-solid fa-database av-accent-warm"></i>
+                        <span data-i18n="btnSchema">Data &amp; API</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN WORKSPACE -->
+        <main class="terminal-container">
+
+            <!-- Offline Mock Fallback Banner (hidden when FastAPI + DuckDB connected) -->
+            <div id="mockFallbackBanner" class="offline-warning-banner d-none" role="alert">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <i class="fa-solid fa-triangle-exclamation av-accent-warm fs-5"></i>
+                    <div>
+                        <strong class="av-accent-warm me-1" data-i18n="offlineTitle">Offline Mockup Preview
+                            Active:</strong>
+                        <span class="av-text-body small" data-i18n="offlineDesc">FastAPI + DuckDB backend is not
+                            connected. Showing synthetic sample commodities instead of your 1.49M Krishi Marata Vahini CSV
+                            rows. Run uvicorn on port 8000 and click Connect DuckDB.</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm av-btn-outline-warm fw-bold flex-shrink-0" id="btnRetryBackend">
+                    <i class="fa-solid fa-plug-circle-bolt me-1"></i>
+                    <span data-i18n="btnRetryBackend">Connect DuckDB</span>
+                </button>
+            </div>
+
+            <!-- Honest Sync & Scrape Status Feedback (shared across tabs) -->
+            <div id="syncStatusToast" class="sync-status-toast d-none" aria-live="polite"></div>
+
+            <!-- =================================================================
+                 TAB 1: CHART DESK WORKSPACE (HOMEPAGE TICKER + SIDEBAR + REORDERED MAIN)
+                 ================================================================= -->
+            <div id="viewPanelTerminal" class="av-tab-panel">
+
+                <!-- HOMEPAGE LIVE PRICES TICKER RIBBON (ABOVE THE FOLD ON CHART DESK) -->
+                <div class="av-homepage-ticker-card ticker-tape-wrap" id="livePricesTicker">
+                    <div class="ticker-label">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span data-i18n="liveTicker">Live Prices</span>
+                    </div>
+                    <div class="ticker-tape-viewport">
+                        <div class="ticker-tape-track" id="tickerTrack">
+                            <span class="small fst-italic av-ticker-placeholder" data-i18n="connectingStream">Connecting to
+                                Karnataka APMC Market Stream...</span>
+                        </div>
+                    </div>
+                    <div class="av-bottom-ticker-meta">
+                        <span class="av-ticker-yard-pill" id="tickerYardBadge">BENGALURU</span>
+                        <span class="av-ticker-clock" title="Current Session Time">
+                            <i class="fa-regular fa-clock me-1"></i>
+                            <span id="headerClock">--</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="av-workbench-grid" id="workbenchGrid">
+
+                    <!-- DEDICATED LEFT FILTER & SCREENER SIDEBAR -->
+                    <aside class="av-filter-sidebar" id="filterSidebar" aria-label="Market Filters and Screener">
+                        <div class="av-sidebar-header">
+                            <div>
+                                <div class="av-sidebar-title">
+                                    <i class="fa-solid fa-sliders av-accent-primary"></i>
+                                    <span data-i18n="sidebarTitle">Filters &amp; Screener</span>
+                                </div>
+                                <div class="av-sidebar-subtitle" id="portalSubtitle" data-i18n="subtitleLive">
+                                    Karnataka APMC Price Intelligence &amp; Market Intervention Desk (2002–2026)
+                                </div>
+                            </div>
+                            <button type="button" class="av-sidebar-collapse-btn" id="btnToggleSidebar"
+                                title="Collapse filters sidebar">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                        </div>
+
+                        <!-- 1. APMC Yard Selector + Hub Shortcuts -->
+                        <div class="av-filter-block">
+                            <div class="strip-label">
+                                <i class="fa-solid fa-building-wheat av-accent-primary"></i>
+                                <span data-i18n="labelApmcYard">APMC Market Yard (171 Yards)</span>
+                            </div>
+                            <div class="apmc-combobox" id="apmcCombobox">
+                                <button type="button" class="apmc-combobox-trigger" id="apmcTrigger"
+                                    aria-expanded="false" aria-haspopup="listbox">
+                                    <span class="apmc-combobox-text" id="apmcTriggerText">APMC, BENGALURU</span>
+                                    <i class="fa-solid fa-chevron-down apmc-combobox-arrow"></i>
+                                </button>
+                                <div class="apmc-dropdown-menu">
+                                    <input type="text" class="apmc-search-input" id="apmcSearchInput"
+                                        data-i18n-placeholder="searchYardPlaceholder"
+                                        placeholder="Search 171 Karnataka APMCs (EN / ಕನ್ನಡ)..." autocomplete="off" />
+                                    <ul class="apmc-options-list" id="apmcOptionsList" role="listbox"></ul>
+                                </div>
+                            </div>
+
+                            <div class="quick-mandi-bar" id="quickMandiBar">
+                                <span class="quick-mandi-title" id="quickMandiTitle">
+                                    <i class="fa-solid fa-bolt av-accent-warm"></i> <span data-i18n="majorYards">Major
+                                        Yards:</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 2. Search Commodity & Sort Ranking -->
+                        <div class="av-filter-block">
+                            <div class="strip-label">
+                                <i class="fa-solid fa-magnifying-glass av-accent-teal"></i>
+                                <span data-i18n="labelSearchCommodity">Search Commodity / Ticker (EN / ಕನ್ನಡ)</span>
+                            </div>
+                            <div class="terminal-search-box mb-2">
+                                <i class="fa-solid fa-search search-icon"></i>
+                                <input type="text" id="txtSearch" data-i18n-placeholder="searchCommodityPlaceholder"
+                                    placeholder="Search (e.g., Onion, Paddy, ಈರುಳ್ಳಿ, ಭತ್ತ)..." />
+                            </div>
+
+                            <div class="strip-label mt-2">
+                                <i class="fa-solid fa-arrow-down-short-wide av-accent-warm"></i>
+                                <span data-i18n="labelSort">Sort Ranking</span>
+                            </div>
+                            <select id="sortSelect" class="form-select terminal-sort-select">
+                                <option value="name" selected data-i18n="sortName">Alphabetical (A - Z)</option>
+                                <option value="arrival_desc" data-i18n="sortArrivalDesc">📦 Highest Volume
+                                    (Arrivals)</option>
+                                <option value="gainer" data-i18n="sortGainer">🚀 Top Gainers (Price Jump %)</option>
+                                <option value="loser" data-i18n="sortLoser">📉 Top Price Drops (Losers %)</option>
+                                <option value="price_desc" data-i18n="sortPriceDesc">₹ Highest Modal Price</option>
+                                <option value="price_asc" data-i18n="sortPriceAsc">₹ Lowest Modal Price</option>
+                            </select>
+                        </div>
+
+                        <!-- 3. Momentum Screener -->
+                        <div class="av-filter-block">
+                            <div class="strip-label">
+                                <i class="fa-solid fa-bolt-lightning av-accent-primary"></i>
+                                <span data-i18n="screenerLabel">Session Momentum</span>
+                            </div>
+                            <div class="screener-pills-wrap av-sidebar-screener-grid">
+                                <button type="button" class="screener-pill active" data-screener="all">
+                                    <i class="fa-solid fa-layer-group"></i> <span data-i18n="screenerAll">All</span>
+                                    <span class="av-pill-cnt" id="screenerAllCount">0</span>
+                                </button>
+                                <button type="button" class="screener-pill pill-gainer" data-screener="gainers">
+                                    <i class="fa-solid fa-arrow-trend-up av-bull-text"></i> <span
+                                        data-i18n="screenerGainers">Gainers ▲</span>
+                                    <span class="av-pill-cnt" id="screenerGainerCount">0</span>
+                                </button>
+                                <button type="button" class="screener-pill pill-loser" data-screener="losers">
+                                    <i class="fa-solid fa-arrow-trend-down av-bear-text"></i> <span
+                                        data-i18n="screenerLosers">Drops ▼</span>
+                                    <span class="av-pill-cnt" id="screenerLoserCount">0</span>
+                                </button>
+                                <button type="button" class="screener-pill" data-screener="volume">
+                                    <i class="fa-solid fa-fire av-accent-warm"></i> <span
+                                        data-i18n="screenerVolume">High Vol</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4. Categories -->
+                        <div class="av-filter-block">
+                            <div class="strip-label">
+                                <i class="fa-solid fa-tags av-accent-teal"></i>
+                                <span data-i18n="categoriesLabel">Commodity Categories</span>
+                            </div>
+                            <div class="category-sub-bar av-sidebar-cat-wrap" id="categoryBar">
+                                <span class="cat-tag active" data-group="all" data-i18n="catAll">All Categories</span>
+                                <span class="cat-tag" data-group="Vegetables" data-i18n="catVegetables">🥦
+                                    Vegetables</span>
+                                <span class="cat-tag" data-group="Fruits" data-i18n="catFruits">🍎 Fruits</span>
+                                <span class="cat-tag" data-group="Cereals" data-i18n="catCereals">🌾 Cereals &amp;
+                                    Grains</span>
+                                <span class="cat-tag" data-group="Pulses" data-i18n="catPulses">🌱 Pulses</span>
+                                <span class="cat-tag" data-group="Oilseeds" data-i18n="catOilseeds">🥜 Oilseeds</span>
+                                <span class="cat-tag" data-group="Spices" data-i18n="catSpices">🌶️ Spices</span>
+                                <span class="cat-tag" data-group="Commercial" data-i18n="catCommercial">🌿 Commercial
+                                    Crops</span>
+                            </div>
+                        </div>
+
+                        <!-- 5. Matched Assets Quick-Switch List -->
+                        <div class="av-filter-block mb-0" id="queryMatchBar">
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                <span class="query-match-label mb-0">
+                                    <i class="fa-solid fa-filter av-accent-teal"></i>
+                                    <span data-i18n="matchedCropsLabel">Matched / Ranked:</span>
+                                </span>
+                                <button type="button" class="btn-clear-query d-none" id="btnClearQueryFilters">
+                                    <i class="fa-solid fa-xmark me-1"></i><span data-i18n="btnClearFilters">Reset</span>
+                                </button>
+                            </div>
+                            <div class="query-match-summary mb-2" id="queryFilterSummary">--</div>
+                            <div class="query-match-chips av-sidebar-match-list" id="queryMatchChips"></div>
+                        </div>
+                    </aside>
+
+                    <!-- MAIN WORKSPACE RIGHT PANE (REORDERED: CHART FIRST -> KPI STRIP -> DEPTH TABLE) -->
+                    <section class="av-workspace-main">
+
+                        <!-- WIDGET 1 (TOPMOST!): HERO CHART WORKBENCH -->
+                        <section class="hero-terminal-card" id="terminalHeroSection">
+                            <div class="terminal-header">
+                                <div class="asset-symbol-row">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                            <button type="button" class="btn-terminal btn-sm d-none"
+                                                id="btnShowSidebar" title="Show Filters Sidebar">
+                                                <i class="fa-solid fa-sliders av-accent-primary"></i>
+                                                <span data-i18n="showFilters">Filters</span>
+                                            </button>
+                                            <span class="asset-tag mb-0" id="heroAssetGroup">COMMODITY</span>
+                                        </div>
+                                        <h2 class="asset-title">
+                                            <span id="heroAssetIcon">🌿</span>
+                                            <span id="heroAssetName">Select a Commodity</span>
+                                            <span class="asset-kannada" id="heroAssetKannada"></span>
+                                        </h2>
+                                        <div class="asset-mandi-tag">
+                                            <i class="fa-solid fa-location-dot av-accent-primary me-1"></i>
+                                            <span id="heroApmcName">Karnataka APMC Network</span>
+                                            <span class="mx-2">•</span>
+                                            <span id="heroSessionMeta">Latest Trading Session</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-lg-end">
+                                        <div class="mega-price-box justify-content-lg-end">
+                                            <span class="mega-price" id="heroPrice">₹--</span>
+                                            <span class="mega-price-unit" data-i18n="perQuintal">/ Quintal</span>
+                                            <span class="delta-pill stable" id="heroDeltaPill">● 0.00%</span>
+                                        </div>
+                                        <div class="av-text-muted small mt-1 font-monospace" id="heroKgPrice">
+                                            Equivalent: ₹-- / kg
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- High-Low Range Strip -->
+                                <div class="day-range-panel">
+                                    <div class="range-stat-item">
+                                        <span class="range-stat-label" data-i18n="dayLow">Session Low (Min)</span>
+                                        <span class="range-stat-val low-val" id="heroDayLow">₹--</span>
+                                    </div>
+                                    <div class="range-divider"></div>
+                                    <div class="range-stat-item">
+                                        <span class="range-stat-label" data-i18n="dayModal">Session Modal (Avg)</span>
+                                        <span class="range-stat-val av-accent-teal" id="heroDayModal">₹--</span>
+                                    </div>
+                                    <div class="range-divider"></div>
+                                    <div class="range-stat-item">
+                                        <span class="range-stat-label" data-i18n="dayHigh">Session High (Max)</span>
+                                        <span class="range-stat-val high-val" id="heroDayHigh">₹--</span>
+                                    </div>
+                                    <div class="range-divider"></div>
+                                    <div class="range-stat-item">
+                                        <span class="range-stat-label" data-i18n="daySpread">Day Spread / Volatility</span>
+                                        <span class="range-stat-val av-accent-warm" id="heroDaySpread">₹--</span>
+                                    </div>
+                                    <div class="range-divider"></div>
+                                    <div class="range-stat-item">
+                                        <span class="range-stat-label" data-i18n="prevClose">Prior Session Close</span>
+                                        <span class="range-stat-val" id="heroPrevPrice">₹--</span>
+                                    </div>
+                                    <div class="range-divider"></div>
+                                    <div class="range-stat-item">
+                                        <span class="range-stat-label" data-i18n="totalVol">Session Arrivals</span>
+                                        <span class="range-stat-val" id="heroVolume">-- Qtl</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart Toolbar -->
+                            <div class="chart-toolbar">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="av-text-muted small fw-bold text-uppercase"
+                                        style="letter-spacing:0.5px;" data-i18n="timeframeLabel">Timeframe:</span>
+                                    <div class="period-btn-group">
+                                        <button type="button" class="period-btn" data-days="7"
+                                            data-i18n="period7">7D</button>
+                                        <button type="button" class="period-btn" data-days="15"
+                                            data-i18n="period15">15D</button>
+                                        <button type="button" class="period-btn active" data-days="30"
+                                            data-i18n="period30">30D</button>
+                                        <button type="button" class="period-btn" data-days="90"
+                                            data-i18n="period90">90D</button>
+                                        <button type="button" class="period-btn" data-days="365"
+                                            data-i18n="period365">1Y</button>
+                                        <button type="button" class="period-btn" data-days="0"
+                                            data-i18n="period0">ALL</button>
+                                    </div>
+
+                                    <div class="chart-style-toggle" role="group" aria-label="Candle Interval">
+                                        <button type="button" class="style-btn interval-btn active"
+                                            data-interval="daily" data-i18n="intervalDaily">1D</button>
+                                        <button type="button" class="style-btn interval-btn"
+                                            data-interval="weekly" data-i18n="intervalWeekly">1W</button>
+                                        <button type="button" class="style-btn interval-btn"
+                                            data-interval="monthly" data-i18n="intervalMonthly">1M</button>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <div class="chart-style-toggle" role="group" aria-label="Chart Mode">
+                                        <button type="button" class="style-btn active" id="btnStyleCandle"
+                                            data-chart-style="candlestick">
+                                            <i class="fa-solid fa-chart-simple"></i> <span
+                                                data-i18n="styleCandle">Candlestick</span>
+                                        </button>
+                                        <button type="button" class="style-btn" id="btnStyleGlow"
+                                            data-chart-style="glow">
+                                            <i class="fa-solid fa-chart-line"></i> <span data-i18n="styleGlow">Line
+                                                Chart</span>
+                                        </button>
+                                        <button type="button" class="style-btn" id="btnStyleBand"
+                                            data-chart-style="band">
+                                            <i class="fa-solid fa-chart-area"></i> <span data-i18n="styleBand">High-Low
+                                                Band</span>
+                                        </button>
+                                    </div>
+
+                                    <a id="btnDeepAnalytics" href="#"
+                                        class="btn btn-sm av-btn-outline-primary rounded-3 px-3 fw-bold">
+                                        <span data-i18n="fullAnalytics">Full Analytics</span>
+                                        <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Technical Overlays & Live TA Signals Strip -->
+                            <div class="ta-toolbar-strip" id="taToolbarStrip">
+                                <div class="d-flex align-items-center gap-1 flex-wrap">
+                                    <span class="ta-toolbar-label" data-i18n="taIndicatorsLabel">Indicators:</span>
+                                    <button type="button" class="ta-ind-pill" id="btnIndSma7" data-ind="sma7"
+                                        data-i18n="taIndSma7">SMA 7</button>
+                                    <button type="button" class="ta-ind-pill active" id="btnIndSma20" data-ind="sma20"
+                                        data-i18n="taIndSma20">SMA 20</button>
+                                    <button type="button" class="ta-ind-pill" id="btnIndSma50" data-ind="sma50"
+                                        data-i18n="taIndSma50">SMA 50</button>
+                                    <button type="button" class="ta-ind-pill" id="btnIndEma12" data-ind="ema12"
+                                        data-i18n="taIndEma12">EMA 12</button>
+                                    <button type="button" class="ta-ind-pill" id="btnIndRsi14" data-ind="rsi14"
+                                        data-i18n="taIndRsi14">RSI 14</button>
+                                </div>
+                                <div class="ta-signals-strip" id="taSignalsStrip"></div>
+                            </div>
+
+                            <!-- Canvas Container -->
+                            <div class="chart-canvas-wrap">
+                                <div class="chart-watermark" id="chartWatermark">AGRI VAAHAN</div>
+                                <canvas id="marketTrendChart"></canvas>
+                            </div>
+
+                            <!-- Optional Synchronized RSI(14) Oscillator Sub-Pane -->
+                            <div id="rsiPaneWrap" class="av-rsi-wrap d-none">
+                                <div class="av-rsi-label" data-i18n="chartRsiLabel">RSI (14)</div>
+                                <canvas id="marketRsiChart"></canvas>
+                            </div>
+                        </section>
+
+                        <!-- WIDGET 2: RE-ORDERED COMPACT YARD KPI RIBBON -->
+                        <section class="market-kpi-grid">
+                            <!-- Latest Arrivals First -->
+                            <div class="stock-kpi-card volume-card">
+                                <div class="kpi-hdr">
+                                    <span class="kpi-title" data-i18n="kpiVolumeTitle">Latest Session Arrivals</span>
+                                    <span class="kpi-badge-icon av-badge-warm"><i
+                                            class="fa-solid fa-boxes-stacked"></i>
+                                        <span data-i18n="kpiVolumeBadge">Arrivals</span></span>
+                                </div>
+                                <div class="kpi-big-num"><span id="kpiArrivals">--</span><small
+                                        data-i18n="quintals">Quintals</small></div>
+                                <div class="kpi-subtext">
+                                    <span id="kpiArrivalsDelta" class="av-text-strong fw-bold">--</span>
+                                    <span class="av-text-muted" id="kpiSessionDate">• Latest: --</span>
+                                </div>
+                            </div>
+
+                            <!-- Market Breadth Second -->
+                            <div class="stock-kpi-card sentiment-card">
+                                <div class="kpi-hdr">
+                                    <span class="kpi-title" data-i18n="kpiBreadthTitle">Market Breadth</span>
+                                    <span class="kpi-badge-icon av-badge-teal"><i
+                                            class="fa-solid fa-scale-balanced"></i>
+                                        <span data-i18n="kpiBreadthBadge">Sentiment</span></span>
+                                </div>
+                                <div class="kpi-big-num" id="breadthSummary">--</div>
+                                <div class="breadth-bar-wrap">
+                                    <div class="breadth-bar">
+                                        <div class="breadth-up" id="breadthUpBar" style="width: 50%;"></div>
+                                        <div class="breadth-neutral" id="breadthNeutralBar" style="width: 25%;"></div>
+                                        <div class="breadth-down" id="breadthDownBar" style="width: 25%;"></div>
+                                    </div>
+                                    <div class="breadth-labels">
+                                        <span class="av-bull-text fw-semibold" id="countUp">▲ 0 Up</span>
+                                        <span class="av-text-muted" id="countNeutral">● 0 Flat</span>
+                                        <span class="av-bear-text fw-semibold" id="countDown">▼ 0 Down</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Top Gainer Third -->
+                            <div class="stock-kpi-card gainer-card">
+                                <div class="kpi-hdr">
+                                    <span class="kpi-title" data-i18n="kpiGainerTitle">Top Gainer</span>
+                                    <span class="kpi-badge-icon av-badge-bull"><i
+                                            class="fa-solid fa-arrow-trend-up"></i>
+                                        <span data-i18n="kpiGainerBadge">Bullish</span></span>
+                                </div>
+                                <div class="kpi-big-num av-bull-text" id="kpiTopGainerName">--</div>
+                                <div class="kpi-subtext">
+                                    <span id="kpiTopGainerDelta" class="fw-bold av-bull-text">--</span>
+                                    <span class="av-text-muted" data-i18n="kpiGainerSub">• Highest price jump</span>
+                                </div>
+                            </div>
+
+                            <!-- Top Loser Fourth -->
+                            <div class="stock-kpi-card loser-card">
+                                <div class="kpi-hdr">
+                                    <span class="kpi-title" data-i18n="kpiLoserTitle">Top Price Drop</span>
+                                    <span class="kpi-badge-icon av-badge-bear"><i
+                                            class="fa-solid fa-arrow-trend-down"></i>
+                                        <span data-i18n="kpiLoserBadge">Bearish</span></span>
+                                </div>
+                                <div class="kpi-big-num av-bear-text" id="kpiTopLoserName">--</div>
+                                <div class="kpi-subtext">
+                                    <span id="kpiTopLoserDelta" class="fw-bold av-bear-text">--</span>
+                                    <span class="av-text-muted" data-i18n="kpiLoserSub">• Steepest dip</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- WIDGET 3: WATCHLIST DEPTH MATRIX (DEFAULT TABLE + CARDS OPTION) -->
+                        <section class="watchlist-section">
+                            <div class="watchlist-nav">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <i class="fa-solid fa-table-list av-accent-primary"></i>
+                                    <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="watchlistTitle">Market Depth
+                                        &amp; Yard Watchlist</h3>
+                                </div>
+
+                                <div class="chart-style-toggle">
+                                    <button type="button" class="style-btn active" id="btnViewTable">
+                                        <i class="fa-solid fa-table-list"></i> <span data-i18n="viewTable">Depth
+                                            Table</span>
+                                    </button>
+                                    <button type="button" class="style-btn" id="btnViewCards">
+                                        <i class="fa-solid fa-table-cells-large"></i> <span
+                                            data-i18n="viewCards">Cards</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Market Depth Table View (Default) -->
+                            <div class="terminal-table-card" id="comTableWrap">
+                                <table class="terminal-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="thCommodity">Commodity / Asset</th>
+                                            <th data-i18n="thCategory">Category</th>
+                                            <th data-i18n="thChange">Session Δ</th>
+                                            <th data-i18n="thModal">Modal Price (₹/Qtl)</th>
+                                            <th data-i18n="thLow">Low (₹)</th>
+                                            <th data-i18n="thHigh">High (₹)</th>
+                                            <th data-i18n="thVolume">Volume (Qtl)</th>
+                                            <th data-i18n="thDate">Last Traded</th>
+                                            <th class="text-end" data-i18n="thAction">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="comTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <!-- Cards Grid View (Optional) -->
+                            <div class="stock-grid d-none" id="comGrid"></div>
+
+                            <!-- Empty State -->
+                            <div class="terminal-empty-box d-none" id="emptyStateBox">
+                                <div class="terminal-empty-icon"><i class="fa-solid fa-chart-line"></i></div>
+                                <h4 class="av-text-strong fw-bold mb-1" data-i18n="emptyTitle">No Commodities Match
+                                    Filter</h4>
+                                <p class="av-text-muted small mb-3" data-i18n="emptyDesc">Try clearing your search term,
+                                    switching categories, or selecting another APMC market yard.</p>
+                                <button type="button" class="btn btn-sm av-btn-outline-primary fw-bold"
+                                    id="btnEmptyResetFilters">
+                                    <i class="fa-solid fa-rotate-left me-1"></i><span data-i18n="btnClearFilters">Reset
+                                        Filters</span>
+                                </button>
+                            </div>
+                        </section>
+
+                    </section>
+                </div>
+            </div>
+
+            <!-- =================================================================
+                 TAB 2: STATEWIDE MOVERS WORKSPACE (DEDICATED REORDERED PANEL)
+                 ================================================================= -->
+            <div id="viewPanelMovers" class="av-tab-panel d-none">
+                <section class="av-phase-preview-card">
+                    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
+                        <div>
+                            <h2 class="av-phase-title mb-1">
+                                <i class="fa-solid fa-fire-flame-curved av-accent-warm me-2"></i>
+                                <span data-i18n="trendsModalTitle">Karnataka Statewide Market Movers (Recent 45
+                                    Days)</span>
+                            </h2>
+                            <p class="av-phase-desc mb-0" data-i18n="moversDesc">Cross-yard gainers and steep drops
+                                across active Karnataka APMCs. Click any commodity row to load it directly into Chart
+                                Desk.</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn-terminal" id="btnRefreshMovers">
+                                <i class="fa-solid fa-arrows-rotate av-accent-primary"></i>
+                                <span data-i18n="moversRefresh">Reload Movers</span>
+                            </button>
+                            <button type="button" class="btn-terminal" id="btnMoversBackToTerminal">
+                                <i class="fa-solid fa-arrow-left av-accent-primary"></i>
+                                <span data-i18n="backToTerminal">Back to Chart Desk</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-lg-6">
+                            <div class="av-movers-pane">
+                                <h6 class="av-bull-text text-uppercase small fw-bold mb-3">
+                                    <i class="fa-solid fa-arrow-trend-up me-1"></i>
+                                    <span data-i18n="trendsGainers">Top Statewide Gainers</span>
+                                </h6>
+                                <div id="trendsGainersList"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="av-movers-pane">
+                                <h6 class="av-bear-text text-uppercase small fw-bold mb-3">
+                                    <i class="fa-solid fa-arrow-trend-down me-1"></i>
+                                    <span data-i18n="trendsLosers">Top Statewide Price Drops</span>
+                                </h6>
+                                <div id="trendsLosersList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- =================================================================
+                 TAB 3: WEATHER + PRODUCTION + POLICY INTERVENTIONS
+                 ================================================================= -->
+            <div id="viewPanelAdvisory" class="av-tab-panel d-none">
+                <section class="av-phase-preview-card">
+                    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
+                        <div>
+                            <div class="av-context-chip mb-2">
+                                <span class="av-context-label" data-i18n="selectedContextLabel">Active Asset
+                                    Context</span>
+                                <span class="av-context-val" id="advisoryContextPill">BENGALURU • ONION</span>
+                            </div>
+                            <h2 class="av-phase-title" data-i18n="advisoryPreviewTitle">Weather, Crop Production &amp;
+                                Policy Intervention Desk</h2>
+                            <p class="av-phase-desc mb-0" data-i18n="advisoryPreviewDesc">Phase 4 workspace: Combines
+                                district weather alerts, 5-year seasonal arrival anomalies, and MSP/policy benchmarks into
+                                concrete farmer, FPO &amp; APMC yard interventions.</p>
+                        </div>
+                        <button type="button" class="btn-terminal" id="btnAdvisoryBackToTerminal">
+                            <i class="fa-solid fa-arrow-left av-accent-primary"></i>
+                            <span data-i18n="backToTerminal">Back to Chart Desk</span>
+                        </button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="av-feature-tile">
+                                <i class="fa-solid fa-cloud-showers-heavy av-accent-teal"></i>
+                                <span data-i18n="advisoryFeature1">District Rainfall &amp; Heatwave Risk Feed</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="av-feature-tile">
+                                <i class="fa-solid fa-wheat-awn-circle-exclamation av-accent-warm"></i>
+                                <span data-i18n="advisoryFeature2">24-Year Seasonal Arrival &amp; Glut Detector</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="av-feature-tile">
+                                <i class="fa-solid fa-landmark av-accent-primary"></i>
+                                <span data-i18n="advisoryFeature3">MSP Gap &amp; Storage / Sale Interventions</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- =================================================================
+                 TAB 4: AI TECHNICAL REPORTS (TR-1 SOYABEAN) & MULTI-YEAR MATRIX
+                 ================================================================= -->
+            <div id="viewPanelAnalysis" class="av-tab-panel d-none">
+
+                <!-- Sub-Mode Switcher inside Analysis Tab -->
+                <div class="av-submode-bar mb-3">
+                    <div class="av-submode-pills" role="tablist" aria-label="Analysis Workspace Modes">
+                        <button type="button" class="av-submode-btn active" id="btnAnalysisSubReport" data-subview="report">
+                            <i class="fa-solid fa-file-waveform"></i>
+                            <span data-i18n="subViewReportTitle">AI Crop Reports</span>
+                            <span class="av-tab-badge" data-i18n="subViewReportBadge">TR-1 • Soyabean</span>
+                        </button>
+                        <button type="button" class="av-submode-btn" id="btnAnalysisSubMatrix" data-subview="matrix">
+                            <i class="fa-solid fa-table-cells"></i>
+                            <span data-i18n="subViewMatrixTitle">Multi-Year Matrix &amp; % Δ</span>
+                            <span class="av-tab-badge">2002–2026</span>
+                        </button>
+                    </div>
+                    <span class="small av-text-muted font-monospace" id="analysisSubHint" data-i18n="analysisSubHint">
+                        IISc ↔ KSAMB Research Archive • Live DuckDB Grounded
+                    </span>
+                </div>
+
+                <!-- SUB-VIEW A: AI CROP TECHNICAL REPORT VIEWER (DEFAULT) -->
+                <div id="analysisReportSubView">
+
+                    <!-- Report Header & Control Card -->
+                    <section class="av-phase-preview-card mb-3" id="reportHeaderCard">
+                        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-3">
+                            <div style="max-width: 820px;">
+                                <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+                                    <div class="av-context-chip">
+                                        <span class="av-context-label" data-i18n="reportProgramTag">IISc ↔ KSAMB Program</span>
+                                        <span class="av-context-val" id="reportLiveMaxDateBadge">LIVE DB • --</span>
+                                    </div>
+                                    <span class="av-regime-pill regime-demand_rally" id="reportMspBadge">
+                                        --
+                                    </span>
+                                </div>
+                                <h2 class="av-phase-title" id="reportMainTitle">
+                                    --
+                                </h2>
+                                <p class="av-phase-desc mb-0" id="reportAuthorMeta">
+                                    --
+                                </p>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <button type="button" class="btn-terminal" id="btnReportLoadTerminal">
+                                    <i class="fa-solid fa-chart-simple av-bull-text"></i>
+                                    <span data-i18n="reportBtnChartDesk">Load Soyabean Chart</span>
+                                </button>
+                                <button type="button" class="btn-terminal" id="btnReportJumpMatrix">
+                                    <i class="fa-solid fa-percent av-accent-warm"></i>
+                                    <span data-i18n="reportBtnOctMatrix">Compare Oct 25 vs 26 (% Δ)</span>
+                                </button>
+                                <button type="button" class="btn-terminal" id="btnReportBackToTerminal">
+                                    <i class="fa-solid fa-arrow-left av-accent-primary"></i>
+                                    <span data-i18n="backToTerminal">Back to Chart Desk</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="av-report-picker-strip">
+                            <div class="av-report-select-wrap">
+                                <label for="analysisReportSelect" class="strip-label mb-1">
+                                    <i class="fa-solid fa-book-open-reader av-accent-primary"></i>
+                                    <span data-i18n="reportSelectLabel">Published Study / Report</span>
+                                </label>
+                                <select id="analysisReportSelect" class="form-select terminal-sort-select"></select>
+                            </div>
+                            <div class="av-report-market-bar">
+                                <div class="strip-label mb-1">
+                                    <i class="fa-solid fa-building-wheat av-accent-teal"></i>
+                                    <span data-i18n="reportMarketFocusLabel">Inspect APMC / Scope</span>
+                                </div>
+                                <div class="av-report-market-pills" id="repMarketPills"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section 1: National & State Production Context -->
+                    <section class="av-analysis-card mb-3" id="reportProductionCard">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="av-sec-num">1</span>
+                                <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="repSec1Title">
+                                    National &amp; State Kharif Production Context (SOPA &amp; PIB)
+                                </h3>
+                            </div>
+                            <span class="badge av-surface-badge font-monospace" id="repProdAsOnTag">As on 2026-09-04</span>
+                        </div>
+
+                        <div class="av-analysis-summary-grid mb-3">
+                            <div class="av-analysis-kpi">
+                                <div class="range-stat-label" data-i18n="repKpiKharifLbl">All-India Kharif Sowing</div>
+                                <div class="av-analysis-kpi-val av-accent-primary" id="repKpiKharifHa">--</div>
+                                <div class="av-analysis-kpi-sub" data-i18n="repKpiKharifSub">PIB Release [1]</div>
+                            </div>
+                            <div class="av-analysis-kpi">
+                                <div class="range-stat-label" data-i18n="repKpiAreaLbl">National Soyabean Area</div>
+                                <div class="av-analysis-kpi-val av-text-strong" id="repKpiSoyaArea">--</div>
+                                <div class="av-analysis-kpi-sub" id="repKpiSoyaAreaSub">--</div>
+                            </div>
+                            <div class="av-analysis-kpi">
+                                <div class="range-stat-label" data-i18n="repKpiSopaLbl">SOPA Kharif 2026 Output</div>
+                                <div class="av-analysis-kpi-val av-accent-warm" id="repKpiSopaOut">--</div>
+                                <div class="av-analysis-kpi-sub" id="repKpiSopaSub">--</div>
+                            </div>
+                            <div class="av-analysis-kpi">
+                                <div class="range-stat-label" data-i18n="repKpiKaLbl">Karnataka Divergence</div>
+                                <div class="av-analysis-kpi-val av-bear-text" id="repKpiKaShock">--</div>
+                                <div class="av-analysis-kpi-sub av-bull-text" id="repKpiKaPriceJump">--</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 align-items-stretch">
+                            <div class="col-lg-7">
+                                <div class="av-subpanel h-100">
+                                    <div class="small fw-bold av-text-strong mb-2" data-i18n="repStateShiftsTitle">
+                                        YoY State Kharif Soyabean Production Shift (%)
+                                    </div>
+                                    <div class="av-state-shifts-list" id="repStateShiftsList"></div>
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="av-subpanel av-subpanel-accent h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="small fw-bold av-accent-primary mb-1" id="repProdHeadline">
+                                            --
+                                        </div>
+                                        <p class="small av-text-body mb-0" id="repProdExpectationNote"></p>
+                                    </div>
+                                    <div class="small av-text-muted font-monospace mt-2 pt-2 border-top av-border-top-token">
+                                        SOPA [2] • PIB [1] • Krishi Marata Vahini [5]
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section 2: Live DuckDB Table 1 + Figures 1-4 Multi-Year Seasonal Curves -->
+                    <section class="av-analysis-card mb-3" id="reportSection2Card">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="av-sec-num">2</span>
+                                <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="repSec2Title">
+                                    Market Observations: Oct 2025 vs Oct 2026 &amp; Multi-Year Sep–Dec Dynamics (Live DuckDB)
+                                </h3>
+                            </div>
+                            <span class="small av-text-muted" data-i18n="repTable1ClickHint">
+                                Click any row below to inspect its 2022–2026 Sep–Dec curve &amp; AI forecast
+                            </span>
+                        </div>
+
+                        <!-- Live Table 1 -->
+                        <div class="terminal-table-card mb-3">
+                            <table class="terminal-table av-matrix-table av-rep-table1">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="thApmcYard">APMC Yard</th>
+                                        <th data-i18n="thRepRole">Market Role</th>
+                                        <th data-i18n="thRepOct25Price">Oct 2025 (₹/q)</th>
+                                        <th data-i18n="thRepOct26Price">Oct 2026 (₹/q)</th>
+                                        <th data-i18n="thRepPriceDelta">Price Δ%</th>
+                                        <th data-i18n="thRepOct25Arr">Oct 2025 Arr (q)</th>
+                                        <th data-i18n="thRepOct26Arr">Oct 2026 Arr (q)</th>
+                                        <th data-i18n="thRepArrDelta">Arrivals Δ%</th>
+                                        <th data-i18n="thRepPeak26">Peak 2026 (₹/q)</th>
+                                        <th class="text-end" data-i18n="thAction">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="repTable1Body"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Active Market Observation Note -->
+                        <div class="av-callout-strip mb-3" id="repMarketObsStrip">
+                            <i class="fa-solid fa-magnifying-glass-chart av-accent-primary"></i>
+                            <div class="small av-text-body" id="repMarketObsNote">--</div>
+                        </div>
+
+                        <!-- Figures 1-4 Side-by-Side (Modal Price vs Daily Arrivals Sep 1 - Dec 31) -->
+                        <div class="row g-3">
+                            <div class="col-lg-6">
+                                <div class="av-subpanel h-100">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                        <div class="small fw-bold av-text-strong" id="repSeasonalPriceTitle">
+                                            (a) Modal Price (₹/q) • Sep 1 – Dec 31 (2022–2026)
+                                        </div>
+                                        <span class="badge av-surface-badge font-monospace" id="repSeasonalActiveMarketTag">BIDAR</span>
+                                    </div>
+                                    <div class="av-analysis-canvas-wrap">
+                                        <canvas id="reportSeasonalPriceChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="av-subpanel h-100">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                        <div class="small fw-bold av-text-strong" id="repSeasonalArrTitle">
+                                            (b) Daily Arrivals (Quintals) • Sep 1 – Dec 31 (2022–2026)
+                                        </div>
+                                        <span class="small av-text-muted font-monospace" id="repSeasonalLatestTag">2026 live through --</span>
+                                    </div>
+                                    <div class="av-analysis-canvas-wrap">
+                                        <canvas id="reportSeasonalArrivalsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section 3: AI Price Outlook (Timestral 123M, 78-Day Horizon) -->
+                    <section class="av-analysis-card mb-3" id="reportOutlookCard">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="av-sec-num">3</span>
+                                <h3 class="mb-0 fw-bold fs-6 av-text-strong" id="repOutlookHeading" data-i18n="repSec3Title">
+                                    AI Price Outlook: Fine-Tuned Timestral 123M
+                                </h3>
+                                <span class="badge av-surface-badge font-monospace" id="repOutlookSectionBadge">Sec 3.2 (Figure 5)</span>
+                            </div>
+                            <span class="av-regime-pill" id="repFcMspAlert">--</span>
+                        </div>
+
+                        <!-- Model Architecture Spec Ribbon -->
+                        <div class="av-model-spec-ribbon mb-3" id="repModelSpecsRow"></div>
+
+                        <div id="repForecastFallbackBanner" class="av-callout-strip mb-3 d-none">
+                            <i class="fa-solid fa-circle-info av-accent-warm"></i>
+                            <span class="small av-text-body" data-i18n="repStatewideOutlookNote">
+                                Statewide Table 1 shows the 34-market weighted benchmark. Timestral 123M generates per-APMC forecasts — showing Bidar APMC below; pick any focus mandi above to switch.
+                            </span>
+                        </div>
+
+                        <!-- Outlook KPI Strip (Published Forecast vs Live Post-Cutoff Tracking) -->
+                        <div class="av-outlook-kpis mb-3">
+                            <div class="av-analysis-kpi">
+                                <div class="range-stat-label" data-i18n="repFcCutoffLbl">Cutoff Price (Oct 14)</div>
+                                <div class="av-analysis-kpi-val av-accent-primary" id="repFcCutoffPrice">₹--</div>
+                                <div class="av-analysis-kpi-sub" data-i18n="repFcCutoffSub">512-day lookback anchor</div>
+                            </div>
+                            <div class="av-analysis-kpi">
+                                <div class="range-stat-label" data-i18n="repFcMedianLbl">Fine-Tuned Median (q50)</div>
+                                <div class="av-analysis-kpi-val av-accent-warm" id="repFcMedianRange">--</div>
+                                <div class="av-analysis-kpi-sub" data-i18n="repFcHorizonSub">78-day horizon (→ Dec 31)</div>
+                            </div>
+                            <div class="av-analysis-kpi">
+                                <div class="range-stat-label" data-i18n="repFcBandLbl">Late-Dec P10–P90 Band</div>
+                                <div class="av-analysis-kpi-val av-text-strong" id="repFcBandLateDec">--</div>
+                                <div class="av-analysis-kpi-sub" id="repFcMspDistance">vs MSP ₹5,708/q</div>
+                            </div>
+                            <div class="av-analysis-kpi">
+                                <div class="range-stat-label" data-i18n="repFcLiveTrackLbl">Live Realized Check (Oct 14+)</div>
+                                <div class="av-analysis-kpi-val av-bull-text" id="repFcLiveEval">--</div>
+                                <div class="av-analysis-kpi-sub" id="repFcLiveEvalSub">--</div>
+                            </div>
+                        </div>
+
+                        <!-- Quantile Fan Chart + Live DuckDB Actuals -->
+                        <div class="av-subpanel mb-2">
+                            <div class="av-forecast-canvas-wrap">
+                                <canvas id="reportForecastChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 small av-text-muted">
+                            <span id="repFcMarketNarrative">--</span>
+                            <span class="font-monospace" data-i18n="repFcProvenanceNote">
+                                Orange band/lines: Published Report 1 Timestral 123M baseline • Blue line: Live DuckDB actuals
+                            </span>
+                        </div>
+                    </section>
+
+                    <!-- Section 4: Extreme Events, Hypotheses & Model Resilience -->
+                    <section class="av-analysis-card mb-3" id="reportExtremeEventsCard">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="av-sec-num">4</span>
+                            <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="repSec4Title">
+                                Extreme Events, Market Volatility &amp; Empirical Hypotheses
+                            </h3>
+                        </div>
+                        <div class="row g-3 mb-3" id="repExtremeEventsGrid"></div>
+                        <div class="av-callout-strip av-callout-warm">
+                            <i class="fa-solid fa-shield-halved av-accent-warm"></i>
+                            <div class="small av-text-body" id="repResilienceNote">--</div>
+                        </div>
+                    </section>
+
+                    <!-- Sections 5 & 6: KSAMB Action Points & 2026-27 Proposed Interventions -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-lg-6">
+                            <section class="av-analysis-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <span class="av-sec-num">5</span>
+                                    <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="repSec5Title">
+                                        KSAMB Action Points (Above-MSP Market Regime)
+                                    </h3>
+                                </div>
+                                <div class="av-stack-list" id="repActionPointsList"></div>
+                            </section>
+                        </div>
+                        <div class="col-lg-6">
+                            <section class="av-analysis-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <span class="av-sec-num">6</span>
+                                    <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="repSec6Title">
+                                        Proposed Interventions for the 2026–27 Season
+                                    </h3>
+                                </div>
+                                <div class="av-stack-list" id="repInterventionsList"></div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <!-- Section 7: Market Risk Scenarios (Table 2) & References -->
+                    <section class="av-analysis-card" id="reportRiskCard">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="av-sec-num">7</span>
+                                <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="repSec7Title">
+                                    Market Risk Scenarios &amp; Response Framework (Table 2)
+                                </h3>
+                            </div>
+                        </div>
+                        <p class="small av-text-muted mb-2" id="repRiskScopeNote">--</p>
+                        <div class="av-ext-chips-wrap mb-3" id="repExternalitiesList"></div>
+
+                        <div class="terminal-table-card mb-3">
+                            <table class="terminal-table">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="thRepRiskScenario">External Scenario</th>
+                                        <th data-i18n="thRepRiskImpact">Potential Price Impact</th>
+                                        <th data-i18n="thRepRiskResponse">Recommended KSAMB Response</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="repRiskMatrixBody"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="pt-2 border-top av-border-top-token">
+                            <div class="small fw-bold av-text-strong mb-2" data-i18n="repRefsTitle">
+                                Sources &amp; Academic References
+                            </div>
+                            <ol class="av-refs-list mb-0" id="repReferencesList"></ol>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- SUB-VIEW B: MULTI-YEAR HISTORICAL MATRIX & % Δ LAB (PHASE 3) -->
+                <div id="analysisMatrixSubView" class="d-none">
+
+                <!-- 1. Controls & Span Header Card -->
+                <section class="av-phase-preview-card mb-3">
+                    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-3">
+                        <div>
+                            <div class="av-context-chip mb-2">
+                                <span class="av-context-label" data-i18n="selectedContextLabel">Active Asset
+                                    Context</span>
+                                <span class="av-context-val" id="analysisContextPill">BENGALURU • ONION</span>
+                            </div>
+                            <h2 class="av-phase-title" data-i18n="analysisPreviewTitle">Multi-Year Comparison &amp;
+                                Historical Differential Lab</h2>
+                            <p class="av-phase-desc mb-0" data-i18n="analysisSubDesc">Compare Last N Years arrivals and
+                                modal prices across any Karnataka yard or statewide, diagnose supply-demand regimes, and
+                                calculate exact % Δ between any two years or months.</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <button type="button" class="btn-terminal" id="btnSyncTerminalToAnalysis">
+                                <i class="fa-solid fa-crosshairs av-accent-teal"></i>
+                                <span data-i18n="analysisSyncActive">Use Chart Selection</span>
+                            </button>
+                            <button type="button" class="btn-terminal" id="btnExportAnalysisCsv">
+                                <i class="fa-solid fa-file-csv av-bull-text"></i>
+                                <span data-i18n="btnExportCsv">Export CSV</span>
+                            </button>
+                            <button type="button" class="btn-terminal" id="btnAnalysisBackToTerminal">
+                                <i class="fa-solid fa-arrow-left av-accent-primary"></i>
+                                <span data-i18n="backToTerminal">Back to Chart Desk</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Scope Filter Controls -->
+                    <div class="av-analysis-controls-grid">
+                        <div class="av-analysis-field">
+                            <label for="analysisMarketSelect" class="strip-label">
+                                <i class="fa-solid fa-building-wheat av-accent-primary"></i>
+                                <span data-i18n="analysisMarketLabel">Market Yard Scope</span>
+                            </label>
+                            <select id="analysisMarketSelect" class="form-select terminal-sort-select">
+                                <option value="ALL" data-i18n="analysisAllYards">All Karnataka APMCs (Statewide)</option>
+                            </select>
+                        </div>
+
+                        <div class="av-analysis-field">
+                            <label for="analysisCommoditySelect" class="strip-label">
+                                <i class="fa-solid fa-seedling av-bull-text"></i>
+                                <span data-i18n="analysisCommodityLabel">Commodity</span>
+                            </label>
+                            <select id="analysisCommoditySelect" class="form-select terminal-sort-select"></select>
+                        </div>
+
+                        <div class="av-analysis-field">
+                            <label for="analysisYearsSelect" class="strip-label">
+                                <i class="fa-solid fa-calendar-days av-accent-warm"></i>
+                                <span data-i18n="analysisLookbackLabel">Lookback Span</span>
+                            </label>
+                            <select id="analysisYearsSelect" class="form-select terminal-sort-select">
+                                <option value="3" data-i18n="analysisYears3">Last 3 Years</option>
+                                <option value="5" selected data-i18n="analysisYears5">Last 5 Years</option>
+                                <option value="10" data-i18n="analysisYears10">Last 10 Years</option>
+                                <option value="15" data-i18n="analysisYears15">Last 15 Years</option>
+                                <option value="0" data-i18n="analysisYears0">All Available Years (2002–2026)</option>
+                            </select>
+                        </div>
+
+                        <div class="av-analysis-field">
+                            <label for="analysisGranularitySelect" class="strip-label">
+                                <i class="fa-solid fa-table-columns av-accent-teal"></i>
+                                <span data-i18n="analysisGranularityLabel">Table Granularity</span>
+                            </label>
+                            <select id="analysisGranularitySelect" class="form-select terminal-sort-select">
+                                <option value="annual" selected data-i18n="analysisGranAnnual">Annual Summary</option>
+                                <option value="monthly" data-i18n="analysisGranMonthly">Month-by-Month</option>
+                            </select>
+                        </div>
+
+                        <div class="av-analysis-field">
+                            <label for="analysisFocusMonthSelect" class="strip-label">
+                                <i class="fa-solid fa-filter av-accent-primary"></i>
+                                <span data-i18n="analysisMonthFilterLabel">Season / Month Filter</span>
+                            </label>
+                            <select id="analysisFocusMonthSelect" class="form-select terminal-sort-select">
+                                <option value="" selected data-i18n="analysisAllMonths">Full Year (All Months)</option>
+                                <option value="1" data-i18n="monthJan">January</option>
+                                <option value="2" data-i18n="monthFeb">February</option>
+                                <option value="3" data-i18n="monthMar">March</option>
+                                <option value="4" data-i18n="monthApr">April</option>
+                                <option value="5" data-i18n="monthMay">May</option>
+                                <option value="6" data-i18n="monthJun">June</option>
+                                <option value="7" data-i18n="monthJul">July</option>
+                                <option value="8" data-i18n="monthAug">August</option>
+                                <option value="9" data-i18n="monthSep">September</option>
+                                <option value="10" data-i18n="monthOct">October</option>
+                                <option value="11" data-i18n="monthNov">November</option>
+                                <option value="12" data-i18n="monthDec">December</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Last-N-Years Span Summary Ribbon -->
+                    <div class="av-analysis-summary-grid mt-3" id="analysisSummaryGrid">
+                        <div class="av-analysis-kpi">
+                            <div class="range-stat-label" data-i18n="analysisSpanPriceTitle">Span Modal Price Change</div>
+                            <div class="av-analysis-kpi-val" id="analysisSpanPricePct">--</div>
+                            <div class="av-analysis-kpi-sub" id="analysisSpanPeriodTag">--</div>
+                        </div>
+                        <div class="av-analysis-kpi">
+                            <div class="range-stat-label" data-i18n="analysisSpanArrTitle">Span Arrivals Change</div>
+                            <div class="av-analysis-kpi-val" id="analysisSpanArrPct">--</div>
+                            <div class="av-analysis-kpi-sub" id="analysisSpanArrSub">--</div>
+                        </div>
+                        <div class="av-analysis-kpi">
+                            <div class="range-stat-label" data-i18n="analysisHighestModalTitle">Highest Modal Period</div>
+                            <div class="av-analysis-kpi-val av-bull-text" id="analysisPeakPriceVal">₹--</div>
+                            <div class="av-analysis-kpi-sub" id="analysisPeakPricePeriod">--</div>
+                        </div>
+                        <div class="av-analysis-kpi">
+                            <div class="range-stat-label" data-i18n="analysisPeakArrTitle">Peak Arrivals Period</div>
+                            <div class="av-analysis-kpi-val av-accent-warm" id="analysisPeakArrVal">-- Qtl</div>
+                            <div class="av-analysis-kpi-sub" id="analysisPeakArrPeriod">--</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Any-2 Years / Months % Δ Differential Lab & Visual Chart -->
+                <div class="row g-3 mb-3">
+                    <div class="col-xl-7">
+                        <section class="av-analysis-card h-100" id="periodDiffSection">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <i class="fa-solid fa-percent av-accent-warm"></i>
+                                    <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="periodDiffTitle">Any-2
+                                        Years / Months % Δ Differential</h3>
+                                </div>
+                                <span class="av-regime-pill" id="compareRegimeBadge">--</span>
+                            </div>
+
+                            <div class="av-compare-picker-bar mb-2">
+                                <div class="av-compare-select-group">
+                                    <label for="comparePeriodASelect" class="av-compare-lbl"
+                                        data-i18n="periodALabel">Period A (Base)</label>
+                                    <select id="comparePeriodASelect"
+                                        class="form-select terminal-sort-select av-compare-select"></select>
+                                </div>
+
+                                <button type="button" class="btn-terminal av-swap-btn" id="btnSwapComparePeriods"
+                                    title="Swap Period A and Period B">
+                                    <i class="fa-solid fa-arrow-right-arrow-left av-accent-primary"></i>
+                                </button>
+
+                                <div class="av-compare-select-group">
+                                    <label for="comparePeriodBSelect" class="av-compare-lbl"
+                                        data-i18n="periodBLabel">Period B (Target)</label>
+                                    <select id="comparePeriodBSelect"
+                                        class="form-select terminal-sort-select av-compare-select"></select>
+                                </div>
+
+                                <button type="button" class="btn btn-sm av-btn-outline-primary fw-bold px-3"
+                                    id="btnRunPeriodCompare" style="height: 36px;">
+                                    <i class="fa-solid fa-scale-balanced me-1"></i>
+                                    <span data-i18n="btnCompareRun">Compare</span>
+                                </button>
+                            </div>
+
+                            <div class="small font-monospace av-text-muted mb-3" id="compareMetaNote">--</div>
+
+                            <div class="av-diff-tiles-grid" id="compareDiffGrid">
+                                <div class="av-diff-tile">
+                                    <div class="av-diff-label" data-i18n="cmpMetricModal">Modal Price Avg (₹/Qtl)</div>
+                                    <div class="av-diff-pct" id="cmpModalPct">--%</div>
+                                    <div class="av-diff-vals" id="cmpModalVal">₹-- → ₹--</div>
+                                </div>
+                                <div class="av-diff-tile">
+                                    <div class="av-diff-label" data-i18n="cmpMetricArrivals">Total Arrivals (Qtl)</div>
+                                    <div class="av-diff-pct" id="cmpArrPct">--%</div>
+                                    <div class="av-diff-vals" id="cmpArrVal">-- → --</div>
+                                </div>
+                                <div class="av-diff-tile">
+                                    <div class="av-diff-label" data-i18n="cmpMetricDailyArr">Daily Avg Arrivals</div>
+                                    <div class="av-diff-pct" id="cmpDailyArrPct">--%</div>
+                                    <div class="av-diff-vals" id="cmpDailyArrVal">-- → --</div>
+                                </div>
+                                <div class="av-diff-tile">
+                                    <div class="av-diff-label" data-i18n="cmpMetricFloor">Period Floor (Min ₹)</div>
+                                    <div class="av-diff-pct" id="cmpMinPct">--%</div>
+                                    <div class="av-diff-vals" id="cmpMinVal">₹-- → ₹--</div>
+                                </div>
+                                <div class="av-diff-tile">
+                                    <div class="av-diff-label" data-i18n="cmpMetricPeak">Period Peak (Max ₹)</div>
+                                    <div class="av-diff-pct" id="cmpMaxPct">--%</div>
+                                    <div class="av-diff-vals" id="cmpMaxVal">₹-- → ₹--</div>
+                                </div>
+                                <div class="av-diff-tile">
+                                    <div class="av-diff-label" data-i18n="cmpMetricVolatility">Price Spread / Volatility
+                                    </div>
+                                    <div class="av-diff-pct" id="cmpVolPts">-- pts</div>
+                                    <div class="av-diff-vals" id="cmpVolVal">--% → --%</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-xl-5">
+                        <section class="av-analysis-card h-100" id="analysisChartCard">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-chart-line av-accent-primary"></i>
+                                    <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="analysisChartTitle">
+                                        Historical Visual Comparison</h3>
+                                </div>
+                                <div class="chart-style-toggle" role="group" aria-label="Analysis Chart Mode">
+                                    <button type="button" class="style-btn active" id="btnAnalysisChartPeriod"
+                                        data-analysis-chart="period">
+                                        <span data-i18n="chartModePeriodCurve">Period A vs B Curve</span>
+                                    </button>
+                                    <button type="button" class="style-btn" id="btnAnalysisChartMatrix"
+                                        data-analysis-chart="matrix">
+                                        <span data-i18n="chartModeMatrixBars">Last-N-Years Trend</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="av-analysis-canvas-wrap">
+                                <canvas id="analysisCompareChart"></canvas>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- 3. Last-N-Years Price & Arrivals Matrix Table -->
+                <section class="av-analysis-card">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <i class="fa-solid fa-table-list av-accent-primary"></i>
+                            <h3 class="mb-0 fw-bold fs-6 av-text-strong" data-i18n="matrixTableTitle">Multi-Year
+                                Historical Matrix</h3>
+                            <span class="badge av-surface-badge font-monospace" id="analysisMatrixCountBadge">0
+                                periods</span>
+                        </div>
+                        <span class="small av-text-muted" data-i18n="matrixRowHint">Click &quot;Set A&quot; /
+                            &quot;Set B&quot; on any row to compute exact % Δ</span>
+                    </div>
+
+                    <!-- How to use Set A / Set B — in-dashboard guide -->
+                    <div class="av-matrix-help-callout" id="matrixHowToGuide">
+                        <i class="fa-solid fa-circle-info av-mhc-icon"></i>
+                        <div>
+                            <div class="fw-bold mb-1 av-text-strong" data-i18n="matrixHelpTitle">How to use this table</div>
+                            <div class="small av-text-body" data-i18n="matrixHelpBody">Each row is a year (or month). Pick any two rows to compare price &amp; arrival changes as an exact % difference.</div>
+                            <div class="av-mhc-steps mt-2">
+                                <div class="av-mhc-step">
+                                    <span class="av-btn-ab-mini set-a">Set A</span>
+                                    <span class="small" data-i18n="matrixHelpStepA">Click the row you want as the <strong>baseline</strong> (e.g. 2024)</span>
+                                </div>
+                                <div class="av-mhc-step">
+                                    <span class="av-btn-ab-mini set-b">Set B</span>
+                                    <span class="small" data-i18n="matrixHelpStepB">Click the row you want as the <strong>target</strong> (e.g. 2026)</span>
+                                </div>
+                                <div class="av-mhc-step">
+                                    <i class="fa-solid fa-scale-balanced av-accent-primary" style="font-size:0.75rem;"></i>
+                                    <span class="small" data-i18n="matrixHelpStepC">The % Δ panel above auto-updates — no button click needed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="terminal-table-card">
+                        <table class="terminal-table av-matrix-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="thPeriod">Period</th>
+                                    <th data-i18n="thTradingDays">Active Days</th>
+                                    <th data-i18n="thMarketsCount">Yards</th>
+                                    <th data-i18n="thTotalArrivals">Arrivals (Qtl)</th>
+                                    <th data-i18n="thDailyAvgArr">Avg / Day</th>
+                                    <th data-i18n="thLow">Low (₹)</th>
+                                    <th data-i18n="thModal">Modal Price (₹/Qtl)</th>
+                                    <th data-i18n="thHigh">High (₹)</th>
+                                    <th data-i18n="thVolatilityPct">Spread %</th>
+                                    <th data-i18n="thPeakMonth">Peak Month</th>
+                                    <th data-i18n="thDeltaArrPct">Arrivals Δ%</th>
+                                    <th data-i18n="thDeltaPricePct">Price Δ%</th>
+                                    <th data-i18n="thRegime">Market Regime</th>
+                                    <th class="text-end" data-i18n="thCompareAction">Compare A / B</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analysisMatrixBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+                </div><!-- /#analysisMatrixSubView -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="av-footer-collab" data-i18n="footerCollab">
+            A collaborative project: IISc &lt;&gt; KSAMB
+        </div>
+        <h6>
+            <span data-i18n="footerDesc">Agri Vaahan (ಅಗ್ರಿ ವಾಹನ) • Karnataka APMC Price Intelligence &amp; Market
+                Intervention Desk • Powered by</span>
+            <a href="https://pypi.org/project/kmvahini/" target="_blank" rel="noopener noreferrer">Krishi Marata Vahini
+                / kmvahini 1.2.0</a>
+            &amp; DuckDB
+        </h6>
+    </footer>
+
+    <!-- Modal: Full Commodity Deep Analytics + Variety Breakdown -->
+    <div class="modal fade terminal-modal" id="analyticsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="analyticsModalTitle">Commodity Analytics</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-4" id="analyticsStatsRow"></div>
+
+                    <div id="analyticsVarietiesWrap" class="mb-4 d-none">
+                        <h6 class="text-uppercase small fw-bold av-text-muted mb-2"
+                            data-i18n="analyticsVarietiesTitle">Latest Session Variety &amp; Grade Breakdown</h6>
+                        <div class="table-responsive">
+                            <table class="terminal-table" style="min-width: 540px;">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="thVariety">Variety</th>
+                                        <th data-i18n="thGrade">Grade</th>
+                                        <th data-i18n="thModalShort">Modal (₹)</th>
+                                        <th data-i18n="thLowShort">Low (₹)</th>
+                                        <th data-i18n="thHighShort">High (₹)</th>
+                                        <th data-i18n="thArrivalsQtl">Arrivals (Qtl)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analyticsVarietiesBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase small fw-bold av-text-muted mb-2" data-i18n="analyticsCrossTitle">
+                        Cross-Mandi Rate Comparison (Karnataka Yards)</h6>
+                    <div class="table-responsive">
+                        <table class="terminal-table" style="min-width: 640px;">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="thApmcYard">APMC Yard</th>
+                                    <th data-i18n="thDate">Last Traded</th>
+                                    <th data-i18n="thModalShort">Modal (₹)</th>
+                                    <th data-i18n="thLowShort">Low (₹)</th>
+                                    <th data-i18n="thHighShort">High (₹)</th>
+                                    <th data-i18n="thDeltaPct">Δ %</th>
+                                    <th data-i18n="thVolumeShort">Volume</th>
+                                    <th class="text-end" data-i18n="thGo">Go</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analyticsCrossMandiBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Data Pipeline, kmvahini 1.2.0 Sync & API Inspector -->
+    <div class="modal fade terminal-modal" id="apiInspectorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-database av-accent-warm me-2"></i><span
+                            data-i18n="dataApiModalTitle">Data Pipeline, kmvahini 1.2.0 &amp; API Inspector</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-stat-tile mb-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <div class="small fw-bold av-text-strong" id="pipelineStatusTitle">Backend Status</div>
+                                <div class="small av-text-muted font-monospace" id="pipelineStatusMeta">--</div>
+                                <div class="small av-accent-teal font-monospace mt-1" id="pipelineSyncPlanMeta">--</div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap" id="kmvahiniControlsGroup">
+                                <label for="selectKmvahiniMonths" class="small av-text-muted fw-semibold mb-0"
+                                    data-i18n="kmvahiniWindowLabel">Window:</label>
+                                <select id="selectKmvahiniMonths"
+                                    class="form-select form-select-sm terminal-sort-select"
+                                    style="width:auto; height:32px; font-size:0.78rem; padding:2px 26px 2px 10px;">
+                                    <option value="auto" selected data-i18n="kmvahiniOptAuto">Auto (Curr Month + Gap
+                                        Prev N)</option>
+                                    <option value="2" data-i18n="kmvahiniOpt2M">Curr + Min 1 Prev Month (2M+)</option>
+                                    <option value="3" data-i18n="kmvahiniOpt3M">Curr + Min 2 Prev Months (3M+)</option>
+                                    <option value="1" data-i18n="kmvahiniOpt1M">Current Month Only (1M)</option>
+                                </select>
+                                <button type="button" class="btn btn-sm av-btn-tv-bull fw-bold d-none"
+                                    id="btnRunKmvahiniSync">
+                                    <i class="fa-solid fa-cloud-arrow-down me-1"></i>
+                                    <span data-i18n="kmvahiniSyncBtn">Run Live Gap-Aware Scrape</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="av-modal-subdivider">
+                            <span class="small av-text-muted" data-i18n="kmvahiniHelperDesc">Compulsorily scrapes only
+                                the current calendar month (plus prior months only if never scraped after that month
+                                ended), with a same-day guard so completed scrapes suggest trying tomorrow.</span>
+                            <div class="d-flex align-items-center gap-3 flex-wrap mt-2">
+                                <label class="form-check form-check-inline small av-text-body mb-0"
+                                    style="cursor:pointer;">
+                                    <input class="form-check-input" type="checkbox" id="chkForceKmvahiniScrape"
+                                        checked />
+                                    <span class="form-check-label" data-i18n="kmvahiniForceLabel">Force full re-scrape
+                                        (bypass stale cache)</span>
+                                </label>
+                                <label class="form-check form-check-inline small av-accent-warm mb-0"
+                                    style="cursor:pointer;">
+                                    <input class="form-check-input" type="checkbox" id="chkForceSameDayScrape" />
+                                    <span class="form-check-label" data-i18n="kmvahiniForceSameDayLabel">Override
+                                        same-day lock (re-scrape today)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="kmvahiniSyncOutput" class="small font-monospace av-accent-teal mb-3 d-none"></div>
+
+                    <div class="mb-3">
+                        <div class="small fw-bold av-accent-teal mb-1">1. GET /api/market/summary</div>
+                        <pre class="json-preview-box" id="inspectSummaryJson"></pre>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="small fw-bold av-accent-teal mb-1">2. GET /api/market/prices (Sample)</div>
+                        <pre class="json-preview-box" id="inspectCommoditiesJson"></pre>
+                    </div>
+
+                    <div>
+                        <div class="small fw-bold av-accent-teal mb-1">3. GET <span
+                                id="inspectHistoryUrl">/api/market/history</span> (Recent Points)</div>
+                        <pre class="json-preview-box" id="inspectHistoryJson"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendor Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    <!-- i18n, Technical Analysis, Fallback Mockup & Controller (cache-busted) -->
+    <script src="js/i18n.js?v=20261111_phase3b"></script>
+    <script src="js/ta-engine.js?v=20261111_phase3b"></script>
+    <script src="js/mock-data.js?v=20261111_phase3b"></script>
+    <script src="js/app.js?v=20261111_phase3b"></script>
+</body>
+
+</html>

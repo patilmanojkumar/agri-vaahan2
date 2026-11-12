@@ -1,0 +1,28 @@
+# Python
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Operating System & IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test & temporary scratch files
+tests/__pycache__/
+.pytest_cache/
+*.log
+scratch/
+
+# Large raw CSV dumps (DuckDB database marukatte.duckdb already stores all rows)
+data/*.csv
+

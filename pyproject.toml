@@ -1,0 +1,16 @@
+[project]
+name = "e-marukatte"
+version = "0.1.0"
+description = "Karnataka APMC Live Commodity Terminal backed by DuckDB, FastAPI, and kmvahini"
+requires-python = ">=3.11"
+dependencies = [
+    "duckdb>=1.1.0",
+    "fastapi>=0.115.0",
+    "kmvahini==1.2.0",
+    "pandas>=2.2.0",
+    "uvicorn[standard]>=0.32.0",
+]
+
+[tool.uv]
+package = false
+
